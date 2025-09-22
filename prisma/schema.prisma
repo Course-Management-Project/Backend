@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  difficulty  String   @default("Beginner") // Beginner, Intermediate, Advanced
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+model Enrollment {
+  id           String   @id @default(cuid())
+  studentEmail String   @db.VarChar(255)
+  courseId     String
+  enrolledAt   DateTime @default(now())
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentEmail, courseId])
+  @@map("enrollments")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  name      String?  @db.VarChar(255)
+  role      String   @default("student") // student, instructor, admin
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
